@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connectly Login</title>
+    <style>
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1877f2;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dddfe2;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #166fe5;
+        }
+        
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            background-color: rgb(8, 8, 8);
+            border: 1px solid #000000;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .google-btn:hover {
+            background-color: #f8f8f8;
+        }
+        
+        .google-logo {
+            height: 20px;
+            margin-right: 10px;
+        }
+        
+        #loginResponse {
+            text-align: center;
+            margin-top: 15px;
+            padding: 8px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .role-description {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Welcome to Connectly</h1>
+        
+        <form id="loginForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="userRole">Select Role:</label>
+                <select id="userRole" name="userRole">
+                    <option value="user">Regular User</option>
+                    <option value="admin">Administrator</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="guest">Guest</option>
+                </select>
+                <div class="role-description" id="roleDescription">
+                    A standard user with basic access to the platform.
+                </div>
+            </div>
+            
+            <button type="submit">Login</button>
+            
+            <div id="loginResponse"></div>
+        </form>
+        
+        <button class="google-btn" id="googleSignIn">
+            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo" class="google-logo">
+            Sign in with Google
+        </button>
+        
+        <p style="text-align: center; margin-top: 20px;">
+            New to Connectly? <a href="signup.html">Signup</a>
+        </p>
+    </div>
+    
+    <!-- Inline script as a fallback solution -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            console.log("DOM fully loaded - initializing login script");
+        
+            const loginForm = document.getElementById("loginForm");
+            const googleBtn = document.getElementById("googleSignIn");
+            const userRoleSelect = document.getElementById("userRole");
+            const roleDescriptionEl = document.getElementById("roleDescription");
+            
+            // Role descriptions
+            const roleDescriptions = {
+                user: "A standard user with basic access to the platform. Can create posts, like, and comment.",
+                admin: "Full platform access with administrative privileges. Can manage users, modify roles, and access admin panel.",
+                moderator: "Responsible for content moderation. Can review and manage posts, comments, and user activities.",
+                guest: "Limited access with restricted features. Primarily for browsing and minimal interaction."
+            };
+
+            // Update role description dynamically
+            userRoleSelect.addEventListener('change', function() {
+                const selectedRole = this.value;
+                roleDescriptionEl.textContent = roleDescriptions[selectedRole];
+            });
+            
+            if (!loginForm) {
+                console.error("Login form not found!");
+                return;
+            }
+            
+            // Display error messages to the user
+            function showError(message) {
+                const loginResponse = document.getElementById("loginResponse");
+                if (loginResponse) {
+                    loginResponse.textContent = message;
+                    loginResponse.style.color = "#d32f2f";
+                    loginResponse.style.backgroundColor = "#ffebee";
+                    loginResponse.style.padding = "8px";
+                    loginResponse.style.borderRadius = "4px";
+                    loginResponse.style.display = "block";
+                } else {
+                    console.error(message);
+                    alert(message);
+                }
+            }
+        
+            // Display success messages to the user
+            function showSuccess(message) {
+                const loginResponse = document.getElementById("loginResponse");
+                if (loginResponse) {
+                    loginResponse.textContent = message;
+                    loginResponse.style.color = "green";
+                    loginResponse.style.backgroundColor = "#e8f5e9";
+                    loginResponse.style.padding = "8px";
+                    loginResponse.style.borderRadius = "4px";
+                    loginResponse.style.display = "block";
+                } else {
+                    console.log(message);
+                    alert(message);
+                }
+            }
+        
+            // Handle Google Sign-In click
+            if (googleBtn) {
+                googleBtn.addEventListener("click", function() {
+                    window.location.href = "/accounts/google/login/";
+                });
+            }
+        
+            loginForm.addEventListener("submit", async function (event) {
+                event.preventDefault(); // Prevent default form submission
+                console.log("Login form submitted");
+        
+                const username = document.getElementById("username").value;
+                const password = document.getElementById("password").value;
+                const userRole = document.getElementById("userRole").value;
+                
+                // Basic validation
+                if (!username || !password) {
+                    showError("Username and password are required");
+                    return;
+                }
+                
+                console.log(`Attempting login for user: ${username} with role: ${userRole}`);
+        
+                try {
+                    // Get CSRF token
+                    let csrfToken = getCookie('csrftoken');
+                    console.log("CSRF token from cookie:", csrfToken ? "Found" : "Not found");
+        
+                    // If no token in cookie, try to get it from any hidden field
+                    if (!csrfToken) {
+                        const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                        if (csrfInput) {
+                            csrfToken = csrfInput.value;
+                            console.log("CSRF token from input field:", "Found");
+                        }
+                    }
+        
+                    console.log("Trying login endpoint with application/json");
+                    const response = await fetch("/login_user/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrfToken || ""
+                        },
+                        credentials: "include",
+                        body: JSON.stringify({ 
+                            username, 
+                            password,
+                            role: userRole // Include the selected role
+                        })
+                    });
+                    
+                    console.log("Login response status:", response.status);
+                    
+                    try {
+                        const data = await response.json();
+                        console.log("Login response data:", data);
+                        
+                        if (data.success === true) {
+                            // Capitalize first letter of role for display
+                            const displayRole = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+                            
+                            console.log(`Logging in as ${displayRole}! Redirecting to newsfeed`);
+                            showSuccess(`Logging in as ${displayRole} User...`);
+                            
+                            // Store the role in localStorage for persistence
+                            localStorage.setItem('userRole', userRole);
+                            
+                            setTimeout(() => {
+                                window.location.href = data.redirect || "/newsfeed/";
+                            }, 1500);
+                        } else if (data.error) {
+                            showError(`Login failed: ${data.error}`);
+                        } else {
+                            showError("Login failed for an unknown reason.");
+                        }
+                    } catch (jsonError) {
+                        console.error("Error parsing JSON:", jsonError);
+                        
+                        // Handle non-JSON responses or redirects
+                        if (response.redirected) {
+                            // Store the role in localStorage before redirect
+                            localStorage.setItem('userRole', userRole);
+                            window.location.href = response.url;
+                        } else if (response.ok) {
+                            const displayRole = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+                            showSuccess(`Logging in as ${displayRole} User...`);
+                            
+                            // Store the role in localStorage
+                            localStorage.setItem('userRole', userRole);
+                            
+                            setTimeout(() => {
+                                window.location.href = "/newsfeed/";
+                            }, 1500);
+                        } else {
+                            showError("Login failed. Please check your credentials.");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Login error:", error);
+                    showError("Error connecting to server. Please check if the server is running.");
+                }
+            });
+            
+            // Utility function to get cookies
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        
+            console.log("Login script initialization complete");
+        });
+    </script>
+</body>
+</html>
